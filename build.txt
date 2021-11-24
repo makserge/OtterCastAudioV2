@@ -1,0 +1,57 @@
+Firmware
+Details about the Firmware, Software, Webinterface
+Ottercast Firmware is built using buildroot.
+It’s running a mainline Linux kernel, with GNU userland, systemd, PulseAudio and Avahi.
+
+Download ready-made images
+Current firmware binaries can be found on GitHub at:
+Ottercast/buildroot-ottercast-audio
+
+Firmware images are automatically built for each commit via GitHub Actions.
+
+Flashing the image
+The procedure is identical to a Raspberry Pi. Make sure to unzip (.gz/gzip) the firmware before writing it to a card.
+Firmware binaries are disk images, containing partitions and can be written directly to an SD card or eMMC flash.
+
+Do NOT copy the file onto a SD card as a file.
+It needs to be written as a disk image using a tool like Etcher, Win32 Disk Imager or dd.
+
+Initial configuration
+After flashing, you can mount the FAT32 partition and edit the config.sh and (optional) ssh_authorized_keys.
+Configure your WiFi credentials, SSH public keys and a name for the device.
+
+Building your own image
+Building your own image can be done on a regular x86_64 machine running Linux.
+
+Make sure to fulfill the buildroot dependencies:
+
+Distribution	Command
+Arch/Manjaro	pacman -S base-devel git wget perl unzip rsync ncurses
+Debian/Ubuntu/Mint	apt install build-essential git wget unzip rsync libncurses-dev
+These dependency lists are untested, please report if something is missing!
+
+mkdir ottercast
+cd ottercast
+git clone https://github.com/Ottercast/buildroot-ottercast-audio.git
+wget https://buildroot.org/downloads/buildroot-2021.02.1.tar.gz
+tar xfv buildroot-2021.02.1.tar.gz
+cd buildroot-2021.02.1/
+make BR2_EXTERNAL=../buildroot-ottercast-audio/buildroot/ ottercast_s3_defconfig
+This will generate a config file in the buildroot folder.
+
+(optional) Use make menuconfig to change buildroot settings (enable/disable packages, compile settings, etc.).
+(optional) Use make linux-menuconfig to change kernel parameters.
+
+Compile the firmware using make -j$(nproc).
+This will take ~60min on a very fast machine with stable internet connection.
+First compilation will download, compile and assemble a full Linux installation from scratch.
+This can take up to several hours. Be patient! Changes will build much faster.
+
+The resulting disk image will be located at buildroot-(version)/output/images/sdcard.img.
+
+The external tree can be found at: https://github.com/Ottercast/buildroot-ottercast-audio.
+
+Webinterface
+The webinterface is written in PHP and running as a CGI script.
+uhttpd is used as a webserver and serves /var/www on Port 80 via HTTP.
+Frontend is using Bootstrap and jQuery.
